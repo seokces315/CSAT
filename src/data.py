@@ -25,30 +25,23 @@ class CSATKorDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        try:
-            row = self.df.iloc[idx]
-            choices = ast.literal_eval(row["choices"])
+        row = self.df.iloc[idx]
+        choices = ast.literal_eval(row["choices"])
+        prompt = (
+            f"[시험명]\n{row['year']}년 {row['month']}월 {row['exam_type']}\n\n"
+            f"[시험 내 문항 위치]\n{row['question_section']}\n\n"
+            f"[지문]\n{row['paragraph']}\n\n"
+            f"[질문]\n{row['question']}\n{row['passage']}\n\n"
+            f"[선택지]\n1. {choices[0]}\n2. {choices[1]}\n3. {choices[2]}\n4. {choices[3]}\n5. {choices[4]}\n\n"
+            f"[정답]\n{row['answer']}"
+        )
+        text = prompt.replace("\nnan", "")
+        if self.task_type == "REG":
+            label = row["answer_rate"]
+        else:
+            label = row["difficulty"]
 
-            prompt = (
-                f"[시험명]\n{row['year']}년 {row['month']}월 {row['exam_type']}\n\n"
-                f"[시험 내 문항 위치]\n{row['question_section']}\n\n"
-                f"[지문]\n{row['paragraph']}\n\n"
-                f"[질문]\n{row['question']}\n{row['passage']}\n\n"
-                f"[선택지]\n1. {choices[0]}\n2. {choices[1]}\n3. {choices[2]}\n4. {choices[3]}\n5. {choices[4]}\n\n"
-                f"[정답]\n{row['answer']}"
-            )
-
-            text = prompt.replace("\nnan", "")
-
-            if self.task_type == "REG":
-                label = row["answer_rate"]
-            else:
-                label = row["difficulty"]
-
-            return {"text": text, "label": label}
-
-        except Exception as e:
-            return None
+        return {"text": text, "label": label}
 
 
 # Function to process month
@@ -169,6 +162,6 @@ if __name__ == "__main__":
 
     # Define CSAT Korean dataset
     csat_kor_df = load_data(data_path=data_path)
-    # print(csat_kor_df.iloc[0])
     csat_kor_dataset = CSATKorDataset(df=csat_kor_df, task_type="REG")
+    print(len(csat_kor_dataset))
     print(csat_kor_dataset[1]["text"])

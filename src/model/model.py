@@ -1,13 +1,11 @@
 from .pooling import CLSPooling, LastTokenPooling, MeanPooling, AttentionPooling
 from .head import LinearHead, MLPHead
 from .loss import HuberLoss, FocalLoss
-from src.utils import supports_bf16
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import BitsAndBytesConfig
 from peft import LoraConfig, TaskType, get_peft_model
 
-import torch
 import torch.nn as nn
 
 
@@ -68,15 +66,18 @@ class LLMTaskModel(nn.Module):
         input_ids = input_dicts["input_ids"]
         attention_mask = input_dicts["attention_mask"]
         outputs = self.backbone(
-            input_ids=input_ids, attention_mask=attention_mask, return_dict=True
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True,
         )
 
         # Apply pooling over the last hidden state
-        pooled = self.pooler(outputs.last_hidden_state, attention_mask)
+        last_hidden_state = outputs.hidden_states[-1]
+        pooled = self.pooler(last_hidden_state, attention_mask)
 
         # Pass pooled features through the task head
         logits = (
-            self.head(pooled).squeeze(-1)
+            self.head(pooled).reshape(-1)
             if self.task_type == "REG"
             else self.head(pooled)
         )
@@ -84,9 +85,9 @@ class LLMTaskModel(nn.Module):
         # Convert labels to correct type and shape
         labels = input_dicts["labels"]
         labels = (
-            labels.float().squeeze(-1)
+            labels.to(logits.dtype).reshape(-1)
             if self.task_type == "REG"
-            else labels.long().squeeze(-1)
+            else labels.long().reshape(-1)
         )
 
         # Compute the task-specific loss
@@ -119,6 +120,7 @@ def get_lora_config(r, lora_alpha, lora_dropout):
 
 # Load a 4-bit LLM with LoRA and a task head
 def load_llm(
+    dtype,
     task_type,
     model_id,
     gpu_id,
@@ -138,10 +140,6 @@ def load_llm(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
-
-    # Choose dtype and attention based on BF16 support
-    bf16_available = supports_bf16()
-    dtype = torch.bfloat16 if bf16_available else torch.float16
 
     # Prepare 4-bit quantization configuration for the model
     quantization_config = get_quantization_config(dtype=dtype)
