@@ -48,7 +48,7 @@ def parse_args():
         "--num_epochs", default=3, type=int, help="Total number of training epochs"
     )
     arg_parser.add_argument(
-        "--learning_rate", default=3e-5, type=float, help="Initial learning rate"
+        "--learning_rate", default=1e-4, type=float, help="Initial learning rate"
     )
     arg_parser.add_argument(
         "--scheduler_type", default="linear", type=str, help="LR scheduler type"

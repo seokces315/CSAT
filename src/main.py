@@ -51,10 +51,6 @@ def main(args):
         total_df=csat_kor_df, test_size=args.test_size, seed=args.seed
     )
 
-    print(len(csat_kor_train_df))
-    print(len(csat_kor_eval_df))
-    print(len(csat_kor_test_df))
-
     # Initialize train, val and test dataset
     csat_kor_train_dataset = CSATKorDataset(
         df=csat_kor_train_df, task_type=args.task_type
