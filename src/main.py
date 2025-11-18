@@ -51,9 +51,9 @@ def main(args):
         total_df=csat_kor_df, test_size=args.test_size, seed=args.seed
     )
 
-    print(f"Train samples: {len(csat_kor_train_df)}")
-    print(f"Eval samples: {len(csat_kor_eval_df)}")
-    print(f"Test samples: {len(csat_kor_test_df)}")
+    print(len(csat_kor_train_df))
+    print(len(csat_kor_eval_df))
+    print(len(csat_kor_test_df))
 
     # Initialize train, val and test dataset
     csat_kor_train_dataset = CSATKorDataset(
@@ -93,45 +93,43 @@ def main(args):
         name=run_name,
     )
 
-    # Define train configurations for the CSAT fine-tuning experiment
-    metric_for_best_model = "rmse" if args.task_type == "REG" else "accuracy"
-    greater_is_better = False if args.task_type == "REG" else True
-    training_args = TrainingArguments(
-        output_dir=f"../res/{run_name}",
-        data_seed=args.seed,
-        per_device_train_batch_size=args.batch_size,
-        per_device_eval_batch_size=args.batch_size,
-        gradient_accumulation_steps=args.accum_steps,
-        num_train_epochs=args.num_epochs,
-        learning_rate=args.learning_rate,
-        lr_scheduler_type=args.scheduler_type,
-        optim=args.optimizer,
-        logging_strategy="steps",
-        logging_steps=10,
-        eval_strategy="steps",
-        eval_steps=50,
-        save_strategy="steps",
-        save_steps=50,
-        save_total_limit=1,
-        disable_tqdm=False,
-        full_determinism=True,
-        remove_unused_columns=False,
-        load_best_model_at_end=True,
-        metric_for_best_model=metric_for_best_model,
-        greater_is_better=greater_is_better,
-        run_name=run_name,
-        label_names=["labels"],
-        report_to="wandb",
-    )
-
-    # Initialize the Trainer with datasets, metrics, and an early stopping callback
-    data_collator = create_collate_fn(tokenizer=tokenizer, task_type=args.task_type)
-    compute_metrics = (
-        compute_regression_metrics
-        if args.task_type == "REG"
-        else compute_classification_metrics
-    )
+    # Branching by experiment type
     if args.project_name == "CSAT":
+        # Define train configurations for the CSAT fine-tuning experiment
+        metric_for_best_model = "rmse" if args.task_type == "REG" else "accuracy"
+        greater_is_better = False if args.task_type == "REG" else True
+        training_args = TrainingArguments(
+            output_dir=f"../res/{run_name}",
+            data_seed=args.seed,
+            per_device_train_batch_size=args.batch_size,
+            per_device_eval_batch_size=args.batch_size,
+            gradient_accumulation_steps=args.accum_steps,
+            num_train_epochs=args.num_epochs,
+            learning_rate=args.learning_rate,
+            lr_scheduler_type=args.scheduler_type,
+            optim=args.optimizer,
+            logging_steps=10,
+            eval_strategy="epoch",
+            save_strategy="epoch",
+            save_total_limit=1,
+            disable_tqdm=False,
+            full_determinism=True,
+            remove_unused_columns=False,
+            load_best_model_at_end=True,
+            metric_for_best_model=metric_for_best_model,
+            greater_is_better=greater_is_better,
+            run_name=run_name,
+            label_names=["labels"],
+            report_to="wandb",
+        )
+
+        # Initialize the Trainer with datasets, metrics, and an early stopping callback
+        data_collator = create_collate_fn(tokenizer=tokenizer, task_type=args.task_type)
+        compute_metrics = (
+            compute_regression_metrics
+            if args.task_type == "REG"
+            else compute_classification_metrics
+        )
         trainer = Trainer(
             model=model,
             args=training_args,
@@ -149,16 +147,39 @@ def main(args):
 
         # Train the model with early stopping based on evaluation metrics
         trainer.train()
+
+        # Run evaluation and automatically log metrics to W&B
+        trainer.evaluate(eval_dataset=csat_kor_test_dataset)
     else:
+        # Define train-free configurations for the CSAT fine-tuning experiment
+        zero_shot_args = TrainingArguments(
+            output_dir=f"../res/{run_name}",
+            per_device_eval_batch_size=8,
+            disable_tqdm=False,
+            full_determinism=True,
+            remove_unused_columns=False,
+            run_name=run_name,
+            label_names=["labels"],
+            report_to="wandb",
+        )
+
+        # Initialize the Trainer for evaluation-only
+        data_collator = create_collate_fn(tokenizer=tokenizer, task_type=args.task_type)
+        compute_metrics = (
+            compute_regression_metrics
+            if args.task_type == "REG"
+            else compute_classification_metrics
+        )
         trainer = Trainer(
             model=model,
-            args=training_args,
+            args=zero_shot_args,
             data_collator=data_collator,
+            eval_dataset=csat_kor_test_dataset,
             compute_metrics=compute_metrics,
         )
 
-    # Run evaluation and automatically log metrics to W&B
-    trainer.evaluate(eval_dataset=csat_kor_test_dataset)
+        # Run evaluation and automatically log metrics to W&B
+        trainer.evaluate()
 
     # Safely end W&B session
     wandb.finish()
