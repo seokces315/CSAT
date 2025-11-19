@@ -17,6 +17,10 @@ import warnings
 
 warnings.filterwarnings("ignore", message="None of the inputs have requires_grad=True")
 
+import logging
+
+logging.getLogger("transformers").setLevel(logging.ERROR)
+
 
 # Return the parent directory path
 def get_grandparent_dir():
@@ -145,7 +149,8 @@ def main(args):
         trainer.train()
 
         # Run evaluation and automatically log metrics to W&B
-        trainer.evaluate(eval_dataset=csat_kor_test_dataset)
+        test_metrics = trainer.evaluate(eval_dataset=csat_kor_test_dataset)
+        wandb.log({f"test/{key}": value for key, value in test_metrics.items()})
     else:
         # Define train-free configurations for the CSAT fine-tuning experiment
         zero_shot_args = TrainingArguments(
@@ -175,7 +180,8 @@ def main(args):
         )
 
         # Run evaluation and automatically log metrics to W&B
-        trainer.evaluate()
+        test_metrics = trainer.evaluate()
+        wandb.log({f"test/{key}": value for key, value in test_metrics.items()})
 
     # Safely end W&B session
     wandb.finish()
