@@ -9,7 +9,22 @@ from peft import LoraConfig, TaskType, get_peft_model
 import torch.nn as nn
 
 
-# Custom model for fine-tuning on CSAT task
+# Custom Embedding moel for fine-tuning on CSAT task
+class EmbTaskModel(nn.Module):
+    # Initializer
+    def __init__(self, task_type, model):
+        super(EmbTaskModel, self).__init__()
+
+        self.task_type = task_type
+        self.backbone = model
+        hidden_size = self.backbone.config.hidden_size
+
+        # TODO : 2-stage learning (Freeze or Not)
+
+        pooling_map = {}
+
+
+# Custom LLM model for fine-tuning on CSAT task
 class LLMTaskModel(nn.Module):
     # Initializer
     def __init__(
