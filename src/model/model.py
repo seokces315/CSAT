@@ -138,7 +138,6 @@ def load_llm(
     dtype,
     task_type,
     model_id,
-    gpu_id,
     lora_r,
     lora_alpha,
     lora_dropout,
@@ -162,8 +161,8 @@ def load_llm(
     # Load the backbone model with 4-bit quantization
     backbone_model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        dtype=dtype,
-        device_map={"": gpu_id},
+        torch_dtype=dtype,
+        device_map={"": 0},
         quantization_config=quantization_config,
         trust_remote_code=True,
     )

@@ -15,7 +15,7 @@ import wandb
 
 import warnings
 
-warnings.filterwarnings("ignore", message="None of the inputs have requires_grad=True")
+warnings.filterwarnings("ignore")
 
 import logging
 
@@ -71,7 +71,6 @@ def main(args):
         dtype=dtype,
         task_type=args.task_type,
         model_id=args.model_id,
-        gpu_id=args.gpu_id,
         lora_r=args.lora_r,
         lora_alpha=args.lora_alpha,
         lora_dropout=args.lora_dropout,
@@ -94,7 +93,7 @@ def main(args):
     )
 
     # Branching by experiment type
-    if args.project_name == "CSAT":
+    if "Train" in args.project_name:
         # Define train configurations for the CSAT fine-tuning experiment
         metric_for_best_model = "rmse" if args.task_type == "REG" else "accuracy"
         greater_is_better = False if args.task_type == "REG" else True

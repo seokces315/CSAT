@@ -14,7 +14,6 @@ def parse_args():
     arg_parser.add_argument(
         "--model_id", default="LGAI-EXAONE/EXAONE-3.5-7.8B-Instruct", type=str
     )
-    arg_parser.add_argument("--gpu_id", default=0, type=int)
     arg_parser.add_argument("--lora_r", default=8, type=int, help="Size of LoRA")
     arg_parser.add_argument(
         "--lora_alpha", default=16, type=int, help="LoRA update strength"
