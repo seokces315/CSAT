@@ -154,7 +154,7 @@ def main(args):
         # Define train-free configurations for the CSAT fine-tuning experiment
         zero_shot_args = TrainingArguments(
             output_dir=f"../res/{run_name}",
-            per_device_eval_batch_size=8,
+            per_device_eval_batch_size=4,
             disable_tqdm=False,
             full_determinism=True,
             remove_unused_columns=False,
