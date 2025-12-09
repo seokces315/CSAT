@@ -106,7 +106,7 @@ def main(args):
         metric_for_best_model = "rmse" if args.task_type == "REG" else "accuracy"
         greater_is_better = False if args.task_type == "REG" else True
         training_args = TrainingArguments(
-            output_dir=f"../res/{run_name}",
+            output_dir=f"./res/{run_name}",
             data_seed=args.seed,
             per_device_train_batch_size=args.batch_size,
             per_device_eval_batch_size=args.batch_size,
@@ -162,7 +162,7 @@ def main(args):
     else:
         # Define train-free configurations for the CSAT fine-tuning experiment
         zero_shot_args = TrainingArguments(
-            output_dir=f"../res/{run_name}",
+            output_dir=f"./res/{run_name}",
             per_device_eval_batch_size=4,
             disable_tqdm=False,
             full_determinism=True,
