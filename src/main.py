@@ -111,6 +111,7 @@ def main(args):
             eval_strategy="epoch",
             save_strategy="epoch",
             save_total_limit=1,
+            save_safetensors=False,
             disable_tqdm=False,
             full_determinism=True,
             remove_unused_columns=False,
