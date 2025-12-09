@@ -7,6 +7,10 @@ from model.metrics import compute_regression_metrics, compute_classification_met
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from transformers import TrainingArguments, Trainer, EarlyStoppingCallback
 
 import torch
