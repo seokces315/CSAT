@@ -3,3 +3,4 @@ res/
 __pycache__
 wandb/
 *.sh
+.env

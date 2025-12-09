@@ -11,6 +11,8 @@ from transformers import TrainingArguments, Trainer, EarlyStoppingCallback
 
 import torch
 
+import os
+
 import wandb
 
 import warnings
@@ -67,10 +69,12 @@ def main(args):
     )
 
     # Load tokenizer & model
+    token = os.getenv("HF_TOKEN")
     tokenizer, model = load_llm(
         dtype=dtype,
         task_type=args.task_type,
         model_id=args.model_id,
+        token=token,
         lora_r=args.lora_r,
         lora_alpha=args.lora_alpha,
         lora_dropout=args.lora_dropout,

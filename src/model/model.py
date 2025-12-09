@@ -138,6 +138,7 @@ def load_llm(
     dtype,
     task_type,
     model_id,
+    token,
     lora_r,
     lora_alpha,
     lora_dropout,
@@ -150,7 +151,11 @@ def load_llm(
     gamma,
 ):
     # Initialize tokenizer and set configurations
-    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id,
+        token=token,
+        trust_remote_code=True,
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
@@ -164,6 +169,7 @@ def load_llm(
         torch_dtype=dtype,
         device_map={"": 0},
         quantization_config=quantization_config,
+        token=token,
         trust_remote_code=True,
     )
 
