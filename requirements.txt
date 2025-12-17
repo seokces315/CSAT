@@ -1,0 +1,22 @@
+# PyTorch CUDA 11.8 wheels
+--index-url https://download.pytorch.org/whl/cu118
+
+torch==2.6.0
+torchvision==0.21.0
+torchaudio==2.6.0
+
+# Core scientific stack
+numpy==1.26.4
+pandas==2.3.3
+scikit-learn==1.7.2
+
+# LLM / training
+transformers==4.54.0
+peft==0.10.0
+bitsandbytes==0.45.5
+
+# Experiment tracking
+wandb==0.23.0
+
+# Utils
+python-dotenv

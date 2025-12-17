@@ -93,7 +93,8 @@ def main(args):
     model = model.to(device=device, dtype=dtype)
 
     # Intialize W&B only with project name
-    model_id = args.model_id.split("/")[-1].split("-")[0]
+    model_id_split = args.model_id.split("/")[-1].split("-")
+    model_id = model_id_split[0] + "-" + model_id_split[-1]
     run_name = f"{args.task_type}_{model_id}_{args.pooling_type}_{args.head_type}_{args.criterion_type}"
     wandb.init(
         project=args.project_name,
