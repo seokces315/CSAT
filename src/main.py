@@ -118,7 +118,7 @@ def main(args):
             logging_steps=10,
             eval_strategy="epoch",
             save_strategy="epoch",
-            save_total_limit=1,
+            save_total_limit=2,
             save_safetensors=False,
             disable_tqdm=False,
             full_determinism=True,
