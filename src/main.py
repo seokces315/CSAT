@@ -74,14 +74,16 @@ def main(args):
 
     # Load tokenizer & model
     token = os.getenv("HF_TOKEN")
+    quantization_flag = "8b" in args.model_id.lower()
     tokenizer, model = load_llm(
-        dtype=dtype,
-        task_type=args.task_type,
         model_id=args.model_id,
         token=token,
+        quantization_flag=quantization_flag,
+        dtype=dtype,
         lora_r=args.lora_r,
         lora_alpha=args.lora_alpha,
         lora_dropout=args.lora_dropout,
+        task_type=args.task_type,
         pooling_type=args.pooling_type,
         head_type=args.head_type,
         r=args.r,

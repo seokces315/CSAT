@@ -135,13 +135,14 @@ def get_lora_config(r, lora_alpha, lora_dropout):
 
 # Load a 4-bit LLM with LoRA and a task head
 def load_llm(
-    dtype,
-    task_type,
     model_id,
     token,
+    quantization_flag,
+    dtype,
     lora_r,
     lora_alpha,
     lora_dropout,
+    task_type,
     pooling_type,
     head_type,
     r,
@@ -160,18 +161,27 @@ def load_llm(
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    # Prepare 4-bit quantization configuration for the model
-    quantization_config = get_quantization_config(dtype=dtype)
+    if quantization_flag:
+        # Prepare 4-bit quantization configuration for the model
+        quantization_config = get_quantization_config(dtype=dtype)
 
-    # Load the backbone model with 4-bit quantization
-    backbone_model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        torch_dtype=dtype,
-        device_map={"": 0},
-        quantization_config=quantization_config,
-        token=token,
-        trust_remote_code=True,
-    )
+        # Load the backbone model with 4-bit quantization
+        backbone_model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            torch_dtype=dtype,
+            device_map={"": 0},
+            quantization_config=quantization_config,
+            token=token,
+            trust_remote_code=True,
+        )
+    else:
+        backbone_model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            torch_dtype=dtype,
+            device_map={"": 0},
+            token=token,
+            trust_remote_code=True,
+        )
 
     # Optimize the model for memory-efficient training
     backbone_model.config.use_cache = False
