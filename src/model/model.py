@@ -161,6 +161,7 @@ def load_llm(
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
+    # Load backbone model with optional 4-bit quantization
     if quantization_flag:
         # Prepare 4-bit quantization configuration for the model
         quantization_config = get_quantization_config(dtype=dtype)
@@ -175,6 +176,7 @@ def load_llm(
             trust_remote_code=True,
         )
     else:
+        # Load the backbone model
         backbone_model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=dtype,
